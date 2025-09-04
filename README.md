@@ -41,7 +41,7 @@
 
 ### 5. Визуализация контекста системы — диаграмма С4
 
-![Логотип](schemas/warmhouse_monolith_context-System_Context_Diagram_for_WarmHouse.png)
+![system_context](schemas/warmhouse_monolith_context-System_Context_Diagram_for_WarmHouse.png)
 
 # Задание 2. Проектирование микросервисной архитектуры
 

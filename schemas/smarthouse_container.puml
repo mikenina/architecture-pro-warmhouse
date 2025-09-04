@@ -1,0 +1,61 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+!define osaPuml https://raw.githubusercontent.com/Crashedmind/PlantUML-opensecurityarchitecture2-icons/master
+!include osaPuml/Common.puml
+!include osaPuml/User/all.puml
+!include osaPuml/Misc/all.puml
+!include osaPuml/Site/all.puml
+
+
+
+LAYOUT_LEFT_RIGHT()
+
+AddElementTag("web", $bgColor="#fdae61", $fontColor="white")
+AddElementTag("storage", $shape=RoundedBoxShape(), $bgColor="lightSkyBlue", $fontColor="white")
+AddElementTag("databus", $shape=RoundedBoxShape(), $bgColor="lightYellow", $fontColor="black")
+AddRelTag("databus", $lineStyle = DashedLine())
+
+Person_Ext(user, "Пользователь", "", $sprite="osa_user_blue")
+System_Ext(device, "Устройство", "Устройства, модули установленные в домах", $sprite="osa_site_neighbourhood")
+System_Ext(video_hosting, "Видео-хостинг", "Облачное хранилище", $sprite="osa_cloud")
+
+Container_Boundary(smarthouse_system, "Система Умный дом") {
+    Container(spa, "SPA", "Javascript", "Веб-интерфейс Личного Кабинета пользователя", $tags = "web")
+    Container(customer_microservice, "Customer Microservice", "Go", "Микросервис управления пользователями")
+    Container(device_microservice, "Device Microservice", "Go", "Микросервис управления устройствами")
+    Container(telemetry_microservice, "Telemetry Microservice", "Go", "Микросервис Телеметрии")
+    Container(reports_microservice, "Reports Microservice", "Go", "Микросервис отчетов Телеметрии")
+    Container(streaming_microservice, "Streaming Microservice", "Go", "Микросервис видео")
+    Container(device_api_gateway, "Device API Gateway", "Go", "Фасад для взаимодействия с подключенными устройствами (аутентификация устройств, перенаправление потоков данных)")
+
+    ContainerDb(customer_db, "Customer Database", "Postgresql", "БД пользователей", $tags = "storage")
+    ContainerDb(device_db, "Device Database", "Postgresql", "БД управления устройствами", $tags = "storage")
+    ContainerDb(reports_db, "Reports Database", "", "БД агрегированные данные Телеметрии", $tags = "storage")
+
+    ContainerDb(telemetry_bus, "Telemetry Topic", "AMQP", "Очередь данных с устройств", $tags = "databus")
+    ContainerDb(device_command_bus, "Device Cmd Topic", "AMQP", "Очередь команд", $tags = "databus")
+}
+
+Rel(user, spa, "Регистрирует учетку, логинится, управляет устройствами, просматривает данные и видео")
+
+Rel(device, device_api_gateway, "Отправляет данные в")
+Rel(device_api_gateway, telemetry_bus, "Публикует данные с устройства в", $tags = "databus")
+Rel(device_api_gateway, streaming_microservice, "Отправляет потоковые данные с устройства в")
+Rel(device_api_gateway, device_command_bus, "Подписывается на сообщения из", $tags = "databus")
+Rel(device_api_gateway, device, "Отправляет команды на")
+
+Rel(device_microservice, device_command_bus, "Публикует сообщения в", $tags = "databus")
+Rel(telemetry_microservice, telemetry_bus, "Подписывается на сообщения из", $tags = "databus")
+Rel(customer_microservice, customer_db, "Сохраняет\получает данные учетной записи пользователя")
+Rel(reports_microservice, reports_db, "Сохраняет\получает данные для отчетов Телеметрии")
+Rel(telemetry_microservice, reports_microservice, "Передает данные Телеметрии для подготовки к отображению в виде отчетов")
+Rel(device_microservice, device_db, "Сохраняет\получает конфигурации устройств")
+Rel(streaming_microservice, video_hosting, "Перенаправляет потоковые данные")
+
+Rel(spa, customer_microservice, "Регистрация и логин пользователя, запрос данных текущего пользователя", "HTTP")
+Rel(spa, device_microservice, "Подключение нового устройства, конфигурация, запрос сохраненных устройств", "HTTP")
+Rel(spa, reports_microservice, "Запрос отчетов по Телеметрии", "HTTP")
+Rel(spa, streaming_microservice, "Получает видео")
+
+@enduml

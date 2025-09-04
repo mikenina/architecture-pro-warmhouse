@@ -1,0 +1,16 @@
+@startuml
+'!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+!define osaPuml https://raw.githubusercontent.com/Crashedmind/PlantUML-opensecurityarchitecture2-icons/master
+!include osaPuml/Common.puml
+!include osaPuml/User/all.puml
+!include osaPuml/Site/all.puml
+'!include osaPuml/Server/all.puml
+!include osaPuml/Misc/all.puml
+!include osaPuml/Hardware/all.puml
+
+'!include <office/clouds/cloud.puml>
+
+
+listsprites
+@enduml
