@@ -1,3 +1,5 @@
+[Назад](../../README.md)
+```puml
 @startuml
 !includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
@@ -63,3 +65,4 @@ Rel(streaming_microservice, video_hosting, "Перенаправляет пот�
 
 
 @enduml
+```
