@@ -7,7 +7,7 @@
 !include osaPuml/Misc/all.puml
 !include osaPuml/Site/all.puml
 
-AddElementTag("facade", $bgColor="#fdae61", $fontColor="white")
+AddElementTag("facade", $bgColor="#fdae61", $fontColor="black")
 AddElementTag("storage", $shape=RoundedBoxShape(), $bgColor="lightSkyBlue", $fontColor="white")
 AddElementTag("databus", $shape=RoundedBoxShape(), $bgColor="lightYellow", $fontColor="black")
 AddRelTag("databus", $lineStyle = DashedLine())
@@ -45,17 +45,19 @@ Rel(spa, streaming_microservice, "Запрашивает видео")
 Rel(device, device_api_gateway, "Отправляет данные в")
 Rel(device_api_gateway, telemetry_bus, "Публикует данные с устройства в", $tags = "databus")
 Rel(device_api_gateway, streaming_microservice, "Отправляет потоковые данные с устройства в")
-Rel(device_api_gateway, device_command_bus, "Читает сообщения из", $tags = "databus")
+Rel(device_api_gateway, device_command_bus, "Читает из", $tags = "databus")
 Rel(device_api_gateway, device, "Отправляет команды на")
-Rel(device_api_gateway, device_microservice, "Запрашивает активные устройства")
+Rel(device_api_gateway, device_microservice, "Запрашивает список устройств")
 
 Rel(customer_microservice, customer_db, "Сохраняет\получает данные учетной записи пользователя")
 
 Rel(device_microservice, device_command_bus, "Публикует сообщения в", $tags = "databus")
 Rel(device_microservice, device_db, "Сохраняет\получает конфигурации устройств")
 
-Rel(telemetry_microservice, telemetry_bus, "Читает сообщения из", $tags = "databus")
-Rel(telemetry_olap_microservice, telemetry_bus, "Читает сообщения из", $tags = "databus")
+Rel(telemetry_microservice, telemetry_bus, "Читает из", $tags = "databus")
+Rel(telemetry_olap_microservice, telemetry_bus, "Читает из", $tags = "databus")
+Rel(device_microservice, telemetry_bus, "Читает из", $tags = "databus")
+Rel(device_microservice, device_api_gateway, "Синхронный healthcheck")
 Rel(telemetry_microservice, telemetry_oltp_db, "Сохраняет\получает данные телеметрии")
 Rel(telemetry_olap_microservice, telemetry_olap_db, "Сохраняет\получает аналитику телеметрии")
 

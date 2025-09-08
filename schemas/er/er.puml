@@ -13,6 +13,7 @@ entity "Device" as device {
     *serial_number : number
     *availability_status : bool
     description : text
+    state: text
 }
 
 entity "DeviceType" as device_type {
@@ -23,20 +24,43 @@ entity "DeviceType" as device_type {
 
 entity "Location" as location {
     *location_id : number <<generated>>
+    __
     *house_id : number <<FK>>
     description: text
 }
 
 entity "House" as house {
     *house_id : number <<generated>>
+    __
     *user_id : number <<FK>>
     address: text
     description: text
 }
 
+entity "Scenario" as scenario {
+    *scenario_id : number <<generated>>
+    __
+    *house_id : number <<FK>>
+    *scenario : text
+    description: text
+}
+
+entity "DeviceCommandJournal" as device_command_journal {
+    *device_command_journal : number <<generated>>
+    --
+    *device_id : number <<FK>>
+    *command : json
+    *author_id : number <<FK>>
+    datetime: timastamp
+}
+
 device_type ||--o{ device
 user ||--o{ house
 house ||--o{ location
+house ||--o{ scenario
 location ||--o{ device
+device ||--o{ device_command_journal
+user ||--o{ device_command_journal
+scenario ||--o{ device_command_journal
 
 @enduml
