@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./smart_home/init.sql:/docker-entrypoint-initdb.d/init.sql
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
@@ -24,14 +24,30 @@ services:
       start_period: 10s
 
   temperature-api:
-    build:
-      context: temperature-api
-      dockerfile: Dockerfile
+    image: nginx:stable-alpine
+    hostname: temperature-api-internal
     ports:
-      - "8081:8081"
+      - "8081:80"
     container_name: temperature-app
+    volumes:
+      - ./temperature-api/public:/var/www/app/public:ro
+      - ./temperature-api/dockerfiles/nginx/default.conf:/etc/nginx/sites-available/default.conf
+      - ./temperature-api/dockerfiles/nginx/default.conf:/etc/nginx/sites-enabled/default.conf
     networks:
       - smarthome-network
+    restart: unless-stopped
+    init: true
+    tty: true
+
+#  temperature-api:
+#    build:
+#      context: temperature-api-go
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8081:8081"
+#    container_name: temperature-app-go
+#    networks:
+#      - smarthome-network
 
   app:
     build:
