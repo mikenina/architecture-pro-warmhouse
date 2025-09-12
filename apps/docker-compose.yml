@@ -25,29 +25,31 @@ services:
 
   temperature-api:
     image: nginx:stable-alpine
-    hostname: temperature-api-internal
-    ports:
-      - "8081:80"
     container_name: temperature-app
     volumes:
-      - ./temperature-api/public:/var/www/app/public:ro
-      - ./temperature-api/dockerfiles/nginx/default.conf:/etc/nginx/sites-available/default.conf
-      - ./temperature-api/dockerfiles/nginx/default.conf:/etc/nginx/sites-enabled/default.conf
+      - ./temperature-api:/var/www/app:ro
+      - ./temperature-api/dockerfiles/nginx/default.conf:/etc/nginx/conf.d/default.conf
     networks:
       - smarthome-network
+    expose:
+      - 8081
     restart: unless-stopped
-    init: true
     tty: true
+    links:
+      - fpm
 
-#  temperature-api:
-#    build:
-#      context: temperature-api-go
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8081:8081"
-#    container_name: temperature-app-go
-#    networks:
-#      - smarthome-network
+  fpm:
+    image: php:8.1-fpm
+    container_name: php-fpm
+    volumes:
+      - ./temperature-api:/var/www/app
+    networks:
+      - smarthome-network
+    expose:
+      - 9000
+    working_dir: /var/www/app
+    restart: unless-stopped
+    tty: true
 
   app:
     build:
