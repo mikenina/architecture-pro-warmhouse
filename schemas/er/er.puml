@@ -10,10 +10,11 @@ entity "Device" as device {
     --
     *device_type_id : number <<FK>>
     *location_id : number <<FK>>
-    *serial_number : number
-    *availability_status : bool
+    *serial_number : number <<UK>>
     description : text
-    state: text
+    created_datetime: datetime
+    helthcheck_datetime: datetime
+    helthcheck_status : bool
 }
 
 entity "DeviceType" as device_type {
@@ -50,8 +51,11 @@ entity "DeviceCommandJournal" as device_command_journal {
     --
     *device_id : number <<FK>>
     *command : json
-    *author_id : number <<FK>>
-    datetime: timastamp
+    user_id : number <<FK>>
+    scenario_id : number <<FK>>
+    *created_datetime: timastamp
+    execution_datetime: timastamp
+    execution_status: json
 }
 
 device_type ||--o{ device

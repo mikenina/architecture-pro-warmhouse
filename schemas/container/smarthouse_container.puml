@@ -23,7 +23,7 @@ Container_Boundary(smarthouse_system, "SaaS Умный дом") {
     Container(telemetry_microservice, "Telemetry Microservice", "Go", "Микросервис Телеметрии")
     Container(telemetry_olap_microservice, "Telemetry OLAP Microservice", "Go", "Микросервис аналитики Телеметрии")
     Container(streaming_microservice, "Streaming Microservice", "Go", "Микросервис видео")
-    Container(device_api_gateway, "Device API Gateway", "Go", "Фасад для взаимодействия с подключенными устройствами (аутентификация устройств, перенаправление потоков данных)", $tags = "facade")
+    Container(ext_device_api_gateway, "External Device API Gateway", "Go", "Фасад для взаимодействия с подключенными устройствами (аутентификация устройств, перенаправление потоков данных)", $tags = "facade")
 
     ContainerDb(customer_db, "Customer Database", "Postgresql", "БД пользователей", $tags = "storage")
     ContainerDb(device_db, "Device Database", "Postgresql", "БД устройств", $tags = "storage")
@@ -42,12 +42,12 @@ Rel(spa, telemetry_microservice, "Запрашивает данные телем
 Rel(spa, telemetry_olap_microservice, "Запрашивает аналитику телеметрии", "HTTP")
 Rel(spa, streaming_microservice, "Запрашивает видео")
 
-Rel(device, device_api_gateway, "Отправляет данные в")
-Rel(device_api_gateway, telemetry_bus, "Публикует данные с устройства в", $tags = "databus")
-Rel(device_api_gateway, streaming_microservice, "Отправляет потоковые данные с устройства в")
-Rel(device_api_gateway, device_command_bus, "Читает из", $tags = "databus")
-Rel(device_api_gateway, device, "Отправляет команды на")
-Rel(device_api_gateway, device_microservice, "Запрашивает список устройств")
+Rel(device, ext_device_api_gateway, "Отправляет данные в")
+Rel(ext_device_api_gateway, telemetry_bus, "Публикует данные с устройства в", $tags = "databus")
+Rel(ext_device_api_gateway, streaming_microservice, "Отправляет потоковые данные с устройства в")
+Rel(ext_device_api_gateway, device_command_bus, "Читает из", $tags = "databus")
+Rel(ext_device_api_gateway, device, "Отправляет команды на")
+Rel(ext_device_api_gateway, device_microservice, "Запрашивает список устройств")
 
 Rel(customer_microservice, customer_db, "Сохраняет\получает данные учетной записи пользователя")
 
@@ -57,7 +57,7 @@ Rel(device_microservice, device_db, "Сохраняет\получает кон�
 Rel(telemetry_microservice, telemetry_bus, "Читает из", $tags = "databus")
 Rel(telemetry_olap_microservice, telemetry_bus, "Читает из", $tags = "databus")
 Rel(device_microservice, telemetry_bus, "Читает из", $tags = "databus")
-Rel(device_microservice, device_api_gateway, "Синхронный healthcheck")
+Rel(device_microservice, ext_device_api_gateway, "Синхронный healthcheck")
 Rel(telemetry_microservice, telemetry_oltp_db, "Сохраняет\получает данные телеметрии")
 Rel(telemetry_olap_microservice, telemetry_olap_db, "Сохраняет\получает аналитику телеметрии")
 

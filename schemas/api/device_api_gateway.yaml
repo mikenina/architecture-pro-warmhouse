@@ -9,7 +9,7 @@ paths:
   /device/{serialNumber}/healthcheck:
     get:
       summary: Check an external device availability.
-      description: Returns code 200 - if a device is available, 418 otherwise.
+      description: Returns code 200 - if a device is available, 503 otherwise.
       parameters:
         - name: serialNumber
           in: path
@@ -21,9 +21,7 @@ paths:
       responses:
         '200':
           description: Device is available
-        '418':
+        '503':
           description: Device is unavailable
         '400':
           description: Invalid SN supplied
-        '404':
-          description: Device not found

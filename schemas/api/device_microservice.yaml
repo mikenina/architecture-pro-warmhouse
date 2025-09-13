@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: SaaS SmartHouse DeviceMicroservice API spec - OpenAPI 3.0
-  description: Provides Addresses and Devices management API. Allows to configure custom scenarios.
+  description: Provides Locations and Devices management API. Allows to configure custom scenarios.
   version: 1.0.0
 servers:
   - url: 'https://localhost:8082/api/v1'
@@ -127,9 +127,49 @@ paths:
               schema:
                 type: object
                 properties:
-                  availability_status:
+                  helthcheck_status:
                     type: bool
                     example: true
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Device not found
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /device/{deviceId}/switch:
+    post:
+      tags:
+        - device
+      summary: Send command On\Off to the external device
+      description: Service uses async communication, so resource response is only http code, not actual ext device state.
+      parameters:
+        - name: deviceId
+          in: path
+          description: ID of a Device to healthcheck
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommandSwitchOffRequest'
+      responses:
+        '200':
+          description: successful controller action
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Switch off command was successfully sent to device!'
         '400':
           description: Invalid ID supplied
         '404':
@@ -226,15 +266,18 @@ components:
         serial_number:
           type: integer
           example: 3481097512
-        availability_status:
-          type: bool
-          example: true
         description:
           type: string
           example: Kitchen heating controller
-        state:
+        created_datetime:
           type: string
-          example: 'on'
+          example: '2025-09-01T15:47:21'
+        helthcheck_datetime:
+          type: string
+          example: '2025-09-01T16:00:00'
+        helthcheck_status:
+          type: bool
+          example: true
     Scenario:
       required:
         - house
@@ -265,6 +308,12 @@ components:
         description:
           type: string
           example: 'Heating system behavior'
+    CommandSwitchOffRequest:
+      type: object
+      properties:
+        command:
+          type: string
+          example: 'off'
     Error:
       type: object
       properties:
