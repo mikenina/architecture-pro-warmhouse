@@ -7,10 +7,12 @@
 !include osaPuml/Misc/all.puml
 !include osaPuml/Site/all.puml
 
+LAYOUT_LEFT_RIGHT()
+
 AddElementTag("facade", $bgColor="#fdae61", $fontColor="black")
 AddElementTag("storage", $shape=RoundedBoxShape(), $bgColor="lightSkyBlue", $fontColor="white")
 AddElementTag("databus", $shape=RoundedBoxShape(), $bgColor="lightYellow", $fontColor="black")
-AddRelTag("databus", $lineStyle = DashedLine())
+AddRelTag("async", $textColor=$ARROW_FONT_COLOR, $lineColor=$ARROW_COLOR, $lineStyle=DashedLine())
 
 Person_Ext(user, "Пользователь", "", $sprite="osa_user_blue")
 System_Ext(device, "Устройство", "Устройства, модули установленные в домах", $sprite="osa_site_neighbourhood")
@@ -25,8 +27,8 @@ Container_Boundary(smarthouse_system, "SaaS Умный дом") {
     Container(streaming_microservice, "Streaming Microservice", "Go", "Микросервис видео")
     Container(ext_device_api_gateway, "External Device API Gateway", "Go", "Фасад для взаимодействия с подключенными устройствами (аутентификация устройств, перенаправление потоков данных)", $tags = "facade")
 
-    ContainerDb(customer_db, "Customer Database", "Postgresql", "БД пользователей", $tags = "storage")
-    ContainerDb(device_db, "Device Database", "Postgresql", "БД устройств", $tags = "storage")
+    ContainerDb(customer_db, "Customer Database", "SQL Database", "БД пользователей", $tags = "storage")
+    ContainerDb(device_db, "Device Database", "SQL Database", "БД устройств", $tags = "storage")
     ContainerDb(telemetry_olap_db, "Telemetry OLAP Database", "", "БД аналитики Телеметрии", $tags = "storage")
     ContainerDb(telemetry_oltp_db, "Telemetry OLTP Database", "", "БД Телеметрии", $tags = "storage")
 
@@ -42,26 +44,21 @@ Rel(spa, telemetry_microservice, "Запрашивает данные телем
 Rel(spa, telemetry_olap_microservice, "Запрашивает аналитику телеметрии", "HTTP")
 Rel(spa, streaming_microservice, "Запрашивает видео")
 
-Rel(device, ext_device_api_gateway, "Отправляет данные в")
-Rel(ext_device_api_gateway, telemetry_bus, "Публикует данные с устройства в", $tags = "databus")
+Rel(ext_device_api_gateway, telemetry_bus, "Публикует данные с устройства в", $tags = "async")
 Rel(ext_device_api_gateway, streaming_microservice, "Отправляет потоковые данные с устройства в")
-Rel(ext_device_api_gateway, device_command_bus, "Читает из", $tags = "databus")
-Rel(ext_device_api_gateway, device, "Отправляет команды на")
-Rel(ext_device_api_gateway, device_microservice, "Запрашивает список устройств")
+Rel(ext_device_api_gateway, device_command_bus, "Читает из", $tags = "async")
+BiRel(ext_device_api_gateway, device, "Коммуникация с внешним устройством")
 
 Rel(customer_microservice, customer_db, "Сохраняет\получает данные учетной записи пользователя")
 
-Rel(device_microservice, device_command_bus, "Публикует сообщения в", $tags = "databus")
+Rel(device_microservice, device_command_bus, "Публикует сообщения в", $tags = "async")
 Rel(device_microservice, device_db, "Сохраняет\получает конфигурации устройств")
 
-Rel(telemetry_microservice, telemetry_bus, "Читает из", $tags = "databus")
-Rel(telemetry_olap_microservice, telemetry_bus, "Читает из", $tags = "databus")
-Rel(device_microservice, telemetry_bus, "Читает из", $tags = "databus")
-Rel(device_microservice, ext_device_api_gateway, "Синхронный healthcheck")
+Rel(telemetry_microservice, telemetry_bus, "Читает из", $tags = "async")
+Rel(telemetry_olap_microservice, telemetry_bus, "Читает из", $tags = "async")
+BiRel(device_microservice, ext_device_api_gateway, "Возможность синхронной коммуникации")
 Rel(telemetry_microservice, telemetry_oltp_db, "Сохраняет\получает данные телеметрии")
 Rel(telemetry_olap_microservice, telemetry_olap_db, "Сохраняет\получает аналитику телеметрии")
 
 Rel(streaming_microservice, video_hosting, "Перенаправляет потоковые данные")
-
-
 @enduml

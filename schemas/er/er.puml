@@ -46,16 +46,17 @@ entity "Scenario" as scenario {
     description: text
 }
 
-entity "DeviceCommandJournal" as device_command_journal {
-    *device_command_journal : number <<generated>>
+entity "CommandJournal" as command_journal {
+    *command_journal_id : number <<generated>>
     --
     *device_id : number <<FK>>
     *command : json
-    user_id : number <<FK>>
-    scenario_id : number <<FK>>
+    *actor_type: string
+    *actor_id : number <<FK>> !--user_id or scenario_id depending on actor_type
     *created_datetime: timastamp
-    execution_datetime: timastamp
-    execution_status: json
+    *execution_status: string
+    execution_payload: json
+    execution_finished_datetime: timastamp
 }
 
 device_type ||--o{ device
@@ -63,8 +64,8 @@ user ||--o{ house
 house ||--o{ location
 house ||--o{ scenario
 location ||--o{ device
-device ||--o{ device_command_journal
-user ||--o{ device_command_journal
-scenario ||--o{ device_command_journal
+device ||--o{ command_journal
+user ||--o{ command_journal
+scenario ||--o{ command_journal
 
 @enduml

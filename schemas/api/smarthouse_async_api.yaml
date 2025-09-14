@@ -8,49 +8,45 @@ servers:
     url: https://localhost:8082
     protocol: RabbitMq
 channels:
-  command-to-ext-device:
+  device-command:
     description: Channel for publishing commands for external device
     publish:
       summary: Publish command
       message:
         contentType: application/json
-        $ref: '#/components/messages/SwitchOffDeviceCommand'
-  telemetry-device-state:
-    description: Channel for publishing state of external device
+        $ref: '#/components/messages/DeviceCommand'
+  device-data:
+    description: Channel for publishing data from external device
     publish:
-      summary: Publish state
+      summary: Publish data
       message:
         contentType: application/json
-        $ref: '#/components/messages/ExternalDeviceState'
-  telemetry-measurement:
-    description: Channel for publishing measurements of external device
-    publish:
-      summary: Publish measurement
-      message:
-        contentType: application/json
-        $ref: '#/components/messages/ExternalDeviceMeasurement'
+        $ref: '#/components/messages/DeviceData'
 components:
   messages:
-    SwitchOffDeviceCommand:
+    DeviceCommand:
       payload:
         type: object
         properties:
           device_serial_number:
             type: integer
             example: 3481097512
-          device_type_id:
+          command_journal_id:
             type: integer
-            example: 1
-          data:
-            type: object
-            properties:
-              command:
-                type: string
-                example: 'off'
-              initial_command_log_id:
-                type: integer
-                example: 1000
-    ExternalDeviceState:
+            example: 15
+#          device_id:
+#            type: integer
+#            example: 1
+#          actor_id:
+#            type: integer
+#            example: 1
+#          actor_type:
+#            type: string
+#            example: 'user'
+#          command_created_datetime:
+#            type: string
+#            example: '2025-09-01T17:20:12'
+    DeviceData:
       payload:
         type: object
         properties:
@@ -60,33 +56,14 @@ components:
           data:
             type: object
             properties:
-              state:
+              data_type:
                 type: string
-                example: 'off'
-              initial_command_log_id:
-                type: integer
-                example: 1000
+                example: 'device state'
+              data:
+                type: string
+                example: '{"state": "off"}'
               datetime:
                 type: string
                 example: '2025-09-01T17:31:19'
-    ExternalDeviceMeasurement:
-      payload:
-        type: object
-        properties:
-          device_serial_number:
-            type: integer
-            example: 55554444
-          data:
-            type: object
-            properties:
-              value:
-                type: string
-                example: '23.5'
-              unit:
-                type: string
-                example: 'C'
-              datetime:
-                type: string
-                example: '2025-09-01T16:30:19'
 
     
