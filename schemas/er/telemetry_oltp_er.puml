@@ -1,0 +1,18 @@
+@startuml
+skinparam linetype ortho
+
+entity "DeviceState" as device_state {
+    *serial_number : number <<PK>>
+    --
+    *state : jsonb
+    *updated_datetime: datetime
+}
+
+entity "DeviceMeasurement" as device_measurement {
+    *serial_number : number <<PK>>
+    --
+    *value : number
+    *updated_datetime: datetime
+}
+
+@enduml

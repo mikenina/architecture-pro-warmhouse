@@ -14,59 +14,31 @@ AddElementTag("controller", $bgColor="lightgrey", $fontColor="black")
 AddRelTag("async", $textColor=$ARROW_FONT_COLOR, $lineColor=$ARROW_COLOR, $lineStyle=DashedLine())
 
 Container(spa, "SPA", "Javascript", "Веб-интерфейс Личного Кабинета пользователя", $tags = "facade")
-ContainerDb(device_db, "Device Database", "SQL Database", "БД устройств", $tags = "storage")
-ContainerDb(device_command_bus, "Device Cmd Topic", "AMQP", "Очередь команд", $tags = "databus")
+ContainerDb(telemetry_oltp_db, "Telemetry OLTP Database", "SQL Database", "БД Телеметрии", $tags = "storage")
 ContainerDb(telemetry_bus, "Telemetry Topic", "AMQP", "Очередь данных с устройств", $tags = "databus")
 System_Ext(device, "Устройство", "Устройства, модули установленные в домах", $sprite="osa_site_neighbourhood")
-Container(streaming_microservice, "Streaming Microservice", "", "Микросервис видео")
+Container(streaming_microservice, "Streaming Microservice", "Go", "Микросервис видео")
 
-Container_Boundary(device_microservice, "Микросервис управления устройствами") {
-    Component(device_microservice.location_controller, "LocationController", "MVC Rest Controller", "Управление адресами", $tags = "controller")
-    Component(device_microservice.device_controller, "DeviceController", "MVC Rest Controller", "Управление устройствами", $tags = "controller")
-    Component(device_microservice.scenario_controller, "ScenarioController", "MVC Rest Controller", "Настройка сценариев работы", $tags = "controller")
-    Component(device_microservice.command_controller, "CommandController", "", "API управления логикой состояний пользовательских команд", $tags = "controller")
-
-    Component(device_microservice.location_service, "LocationService", "Backend", "Управление адресами")
-    Component(device_microservice.device_service, "DeviceService", "Backend", "Управление устройствами")
-    Component(device_microservice.scenario_service, "ScenarioService", "Backend", "Настройка сценариев работы")
-    Component(device_microservice.command_journal_service, "CommandJournalService", "Backend", "Логика состояний пользовательских команд")
+Container_Boundary(telemetry_microservice, "Telemetry Microservice") {
+    Component(telemetry_microservice.telemetry_controller, "TelemetryController", "MVC Rest Controller", "Управление данными с устройств", $tags = "controller")
+    Component(telemetry_microservice.telemetry_consumer, "TelemetryConsumer", "Backend", "Точка входа для асинхронного процессинга данных с устройств", $tags = "facade")
+    Component(telemetry_microservice.telemetry_service, "TelemetryService", "Backend", "Управление данными с устройств")
 }
 
-Container_Boundary(ext_device_api_gateway, "Фасад для взаимодействия с подключенными устройствами") {
-    Component(ext_device_api_gateway.emergency_command_controller, "EmergencyCommandController", "", "API для синхронного выполнения команд на удаленных устройствах", $tags = "facade")
-    Component(ext_device_api_gateway.command_consumer, "CommandConsumer", "Backend", "Точка входа для асинхронного процессинга команд", $tags = "facade")
-    Component(ext_device_api_gateway.command_service, "CommandService", "Backend", "Логика коммуникации с внешними устройствами")
+Container_Boundary(ext_device_api_gateway, "External Device API Gateway") {
     Component(ext_device_api_gateway.device_data_api, "DeviceDataAPI", "Backend", "Логика маршрутизации данных с устройств", $tags = "facade")
 }
 
-Rel(spa, device_microservice.location_controller, "API операций адресами", "sync, JSON/HTTPS")
-Rel(spa, device_microservice.device_controller, "API операций с устройствами", "sync, JSON/HTTPS")
-Rel(spa, device_microservice.scenario_controller, "API пользовательских сценариев", "sync, JSON/HTTPS")
-Rel(spa, device_microservice.command_controller, "API выполнения пользовательских команд", "sync, JSON/HTTPS")
+Rel(spa, telemetry_microservice.telemetry_controller, "API получения данных с устройств", "sync, JSON/HTTPS")
+Rel(spa, streaming_microservice, "Запрашивает видео")
 
-Rel(device_microservice.location_controller, device_microservice.location_service, "")
-Rel(device_microservice.device_controller, device_microservice.device_service, "")
-Rel(device_microservice.scenario_controller, device_microservice.scenario_service, "")
-Rel(device_microservice.command_controller, device_microservice.command_journal_service, "")
-
-Rel(device_microservice.scenario_service, device_microservice.command_journal_service, "Выполнение автоматических команд")
-
-Rel(device_microservice.location_service, device_db, "", "JDBC")
-Rel(device_microservice.device_service, device_db, "", "JDBC")
-Rel(device_microservice.scenario_service, device_db, "", "JDBC")
-
-Rel(device_microservice.command_journal_service, device_db, , "", "JDBC")
-Rel(device_microservice.command_journal_service, device_command_bus, "Публикует сообщения в", $tags = "async")
-Rel(device_microservice.command_journal_service, ext_device_api_gateway.emergency_command_controller, "Синхронное выполнение неотложных команд", "sync, JSON/HTTPS | JSON-RPC")
-
-Rel(ext_device_api_gateway.command_consumer, device_command_bus, "Читает из", $tags = "async")
-Rel(ext_device_api_gateway.command_consumer, ext_device_api_gateway.command_service, "")
-Rel(ext_device_api_gateway.emergency_command_controller, ext_device_api_gateway.command_service, "")
-BiRel(ext_device_api_gateway.command_service, device, "Коммуникация с внешним устройством, sync")
+Rel(telemetry_microservice.telemetry_controller, telemetry_microservice.telemetry_service, "")
+Rel(telemetry_microservice.telemetry_consumer, telemetry_microservice.telemetry_service, "")
+Rel(telemetry_microservice.telemetry_service, telemetry_oltp_db, "", "JDBC")
+Rel(telemetry_microservice.telemetry_consumer, telemetry_bus, "Читает из", $tags = "async")
 
 Rel(device, ext_device_api_gateway.device_data_api, "Посылает данные, sync")
 Rel(ext_device_api_gateway.device_data_api, streaming_microservice, "Отправляет потоковые данные с устройства в")
 Rel(ext_device_api_gateway.device_data_api, telemetry_bus, "Публикует данные с устройства в", $tags = "async")
-Rel(ext_device_api_gateway.device_data_api, device_microservice.device_controller, "Аутентификация устройства, определение типа", "sync, JSON/HTTPS | JSON-RPC")
 
 @enduml

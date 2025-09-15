@@ -2,11 +2,12 @@
 skinparam linetype ortho
 
 entity "User" as user {
-    *user_id : number 
+    *user_id : number <<serial_number>>
+    --
 }
 
 entity "Device" as device {
-    *device_id : number <<generated>>
+    *device_id : number <<serial_number>>
     --
     *device_type_id : number <<FK>>
     *location_id : number <<FK>>
@@ -21,17 +22,18 @@ entity "DeviceType" as device_type {
     *device_type_id : number
     --
     *name : text
+    unit : string
 }
 
 entity "Location" as location {
-    *location_id : number <<generated>>
+    *location_id : number <<serial_number>>
     __
     *house_id : number <<FK>>
     description: text
 }
 
 entity "House" as house {
-    *house_id : number <<generated>>
+    *house_id : number <<serial_number>>
     __
     *user_id : number <<FK>>
     address: text
@@ -39,7 +41,7 @@ entity "House" as house {
 }
 
 entity "Scenario" as scenario {
-    *scenario_id : number <<generated>>
+    *scenario_id : number <<serial_number>>
     __
     *house_id : number <<FK>>
     *scenario : text
@@ -47,7 +49,7 @@ entity "Scenario" as scenario {
 }
 
 entity "CommandJournal" as command_journal {
-    *command_journal_id : number <<generated>>
+    *command_journal_id : number <<serial_number>>
     --
     *device_id : number <<FK>>
     *command : json
