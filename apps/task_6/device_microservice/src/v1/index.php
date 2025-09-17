@@ -1,6 +1,10 @@
 <?php
 $deviceApiGatewayBaseUrl = $_SERVER['DEVICE_API_GATEWAY'] ?? null;
-if (null === $deviceApiGatewayBaseUrl) {
+$deviceDatabaseDSN = $_SERVER['DEVICE_DATABASE_DSN'] ?? null;
+$deviceDatabaseUser = $_SERVER['POSTGRES_USER'] ?? null;
+$deviceDatabasePwd = $_SERVER['POSTGRES_PASSWORD'] ?? null;
+
+if (null === $deviceApiGatewayBaseUrl || null === $deviceDatabaseDSN || null === $deviceDatabaseUser || null === $deviceDatabasePwd) {
     header('Content-type: application/json');
     $response = [
         'code' => 500,
@@ -11,7 +15,8 @@ if (null === $deviceApiGatewayBaseUrl) {
 }
 
 $curler = new Curler($deviceApiGatewayBaseUrl);
-$deviceService = new DeviceService($curler);
+$devicePDO = new DevicePDO($deviceDatabaseDSN, $deviceDatabaseUser, $deviceDatabasePwd);
+$deviceService = new DeviceService($curler, $devicePDO);
 
 $router = new Api($_SERVER, $_GET, $deviceService);
 $router->run();
@@ -47,8 +52,7 @@ class Api
             http_response_code(400);
             return;
         }
-//var_dump($this->command, $this->deviceId, $this->httpParsedBody, $this->userId);
-//        return;
+
         $handler = match ($this->command) {
             self::CMD_CREATE => function () {
                 if (!is_array($this->httpParsedBody)) {
@@ -68,7 +72,7 @@ class Api
                     throw new Exception('Invalid deviceId in PATH', 400);
                 }
 
-                return $this->deviceService->updateAvailabilityStatus($this->deviceId);
+                return $this->deviceService->updateHealthcheckStatus($this->deviceId);
             },
             default => function () {
                 http_response_code(400);
@@ -77,6 +81,9 @@ class Api
         };
         try {
             $result = $handler();
+        } catch (NotFoundException $exception) {
+            http_response_code(404);
+            return;
         } catch (Exception $exception) {
             $result = [
                 'code' => $exception->getCode() ?? 500,
@@ -191,37 +198,115 @@ class DeviceService
 {
     public function __construct(
         private readonly Curler $curler,
+        private readonly DevicePDO $devicePDO,
     ) {}
 
     public function createDevice(array $data): array
     {
-        //todo db
-return ['created'];
+        $sn = $data['serial_number'] ?? null;
+        $deviceTypeId = $data['device_type_id'] ?? null;
+        $userId = $data['user_id'] ?? null;
+        $locationId = $data['location_id'] ?? null;
+        $description = $data['description'] ?? null;
+
+        $newDeviceId = $this->devicePDO->createDevice(
+            (int) $sn,
+            (int) $deviceTypeId,
+            (int) $userId,
+            (int) $locationId,
+            (string) $description,
+        );
+        if (null === $newDeviceId) {
+            throw new Exception('Unable to create device with serial_number: ' . $sn);
+        }
+
+        return $this->devicePDO->getDevice($newDeviceId) ?? [];
     }
 
-    public function updateAvailabilityStatus(int $deviceId): array
+    /**
+     * @throws NotFoundException|Exception
+     */
+    public function updateHealthcheckStatus(int $deviceId): array
     {
-        //todo db
+        $device = $this->devicePDO->getDevice($deviceId);
+        if (!$device) {
+            throw new NotFoundException('Device not found', 404);
+        }
 
-        $path = sprintf('/device/%s/healthcheck', $deviceId);
+        $path = sprintf('/device/%s/healthcheck', $device['serial_number'] ?: 0);
         $curlResponseDto = $this->curler->requestGET($path);
-        $availabilityStatus = match ($curlResponseDto->getStatusCode()) {
-            200 => 1, // device is available
-            503 => 0, // device is unavailable
+        $healthcheckStatus = match ($curlResponseDto->getStatusCode()) {
+            200 => true, // device is available
+            503 => false, // device is unavailable
             default => null,
         };
-        if (null === $availabilityStatus) {
+        if (null === $healthcheckStatus) {
             throw new Exception('Invalid External Device request', $curlResponseDto->getStatusCode());
         }
 
-        // todo db
-
-        return ['availabilityStatus' => $availabilityStatus];
+        $this->devicePDO->updateHealthcheckStatus($deviceId, $healthcheckStatus);
+        return $this->devicePDO->getDevice($deviceId) ?? [];
     }
 
     public function getList(int $userId): array
     {
-        //todo db
-return ['list'];
+        try {
+            return $this->devicePDO->getDeviceListByUserId($userId);
+        } catch (Exception $e) {
+            throw new Exception('Database error: ' . $e->getMessage(), $e->getCode(), $e);
+        }
     }
 }
+
+class DevicePDO extends PDO
+{
+    public function getDeviceListByUserId(int $userId): array
+    {
+        $query = sprintf('select * from device where user_id = %d order by device_id desc', $userId);
+        $stmt = $this->query($query, PDO::FETCH_ASSOC);
+        if ($stmt instanceof PDOStatement) {
+            return $stmt->fetchAll();
+        }
+        throw new Exception($this->errorInfo()[2], $this->errorCode());
+    }
+
+    public function getDevice(int $deviceId): ?array
+    {
+        $query = sprintf('select * from device where device_id = %d', $deviceId);
+        $stmt = $this->query($query, PDO::FETCH_ASSOC);
+        if ($stmt instanceof PDOStatement) {
+            return $stmt->fetch() ?: null;
+        }
+        throw new Exception($this->errorInfo()[2], $this->errorCode());
+    }
+
+    public function createDevice(int $sn, int $deviceTypeId, int $userId, int $locationId, string $desciption): ?int
+    {
+        $query = sprintf(
+            'insert into device (serial_number, device_type_id, user_id, location_id, description) values 
+            (%d, %d, %d, %d, %s)',
+            $sn, $deviceTypeId, $userId, $locationId, $this->quote($desciption)
+        );
+        $cnt = $this->exec($query);
+
+        if (!$cnt) {
+            return null;
+        }
+        return $this->lastInsertId('device_device_id_seq');
+    }
+
+    public function updateHealthcheckStatus(int $deviceId, bool $healthcheckStatus): void
+    {
+        $query = sprintf(
+            'update device set healthcheck_status = %s, healthcheck_datetime = %s where device_id = %d',
+            $healthcheckStatus ? 'true' : 'false',
+            $this->quote((new DateTimeImmutable)->format('Y-m-d H:i:s')),
+            $deviceId
+        );
+
+        $this->exec($query);
+    }
+}
+
+class NotFoundException extends Exception
+{}

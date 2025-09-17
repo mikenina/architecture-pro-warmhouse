@@ -14,8 +14,8 @@ entity "Device" as device {
     *serial_number : number <<UK>>
     description : text
     created_datetime: datetime
-    helthcheck_datetime: datetime
-    helthcheck_status : bool
+    healthcheck_datetime: datetime
+    healthcheck_status : bool
 }
 
 entity "DeviceType" as device_type {

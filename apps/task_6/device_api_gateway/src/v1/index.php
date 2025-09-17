@@ -7,7 +7,7 @@ exit;
 class Api
 {
     private const KNOWN_CMD = ['healthcheck'];
-    private const HEALTH_DEVICES = ['3481097512'];
+    private const HEALTH_DEVICES = ['348109751'];
 
     private ?string $serialNumber = null;
 

@@ -127,7 +127,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  helthcheck_status:
+                  healthcheck_status:
                     type: bool
                     example: true
         '400':
@@ -275,10 +275,10 @@ components:
         created_datetime:
           type: string
           example: '2025-09-01T15:47:21'
-        helthcheck_datetime:
+        healthcheck_datetime:
           type: string
           example: '2025-09-01T16:00:00'
-        helthcheck_status:
+        healthcheck_status:
           type: bool
           example: true
     Scenario:

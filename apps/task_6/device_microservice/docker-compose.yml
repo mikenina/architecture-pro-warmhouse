@@ -6,7 +6,7 @@ services:
     container_name: device-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
+      POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:
@@ -54,6 +54,9 @@ services:
       - "device-api-gateway:host-gateway"
     environment:
       - DEVICE_API_GATEWAY=http://device-api-gateway:8082/device-api-gateway/v1
+      - DEVICE_DATABASE_DSN=${DEVICE_DATABASE_DSN}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 
 volumes:
   postgres_data:
