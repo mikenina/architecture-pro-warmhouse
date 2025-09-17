@@ -9,7 +9,7 @@ class Api
     private const KNOWN_CMD = ['healthcheck'];
     private const HEALTH_DEVICES = ['3481097512'];
 
-    private ?string $deviceId = null;
+    private ?string $serialNumber = null;
 
     private ?string $command = null;
 
@@ -20,14 +20,14 @@ class Api
     {
         $this->parseRequest();
 
-        if (null === $this->deviceId || null === $this->command || !in_array($this->command, self::KNOWN_CMD, true)) {
+        if (null === $this->serialNumber || null === $this->command || !in_array($this->command, self::KNOWN_CMD, true)) {
             http_response_code(400);
             return;
         }
 
         $res = match ($this->command) {
-            'healthcheck' => static function (string $deviceId) {
-                if (in_array($deviceId, self::HEALTH_DEVICES, true)) {
+            'healthcheck' => static function (string $serialNumber) {
+                if (in_array($serialNumber, self::HEALTH_DEVICES, true)) {
                     http_response_code(200);
                     return;
                 }
@@ -37,14 +37,14 @@ class Api
                 http_response_code(400);
             }
         };
-        $res($this->deviceId);
+        $res($this->serialNumber);
     }
 
     private function parseRequest(): void
     {
         $pathInfo = $_SERVER['PATH_INFO'] ?: $this->preparePathInfo();
         preg_match('/^(\/device\/)(\d*)\/([a-z]*)$/', $pathInfo, $matches);
-        $this->deviceId = !empty($matches[2]) ? $matches[2] : null;
+        $this->serialNumber = !empty($matches[2]) ? $matches[2] : null;
         $this->command = !empty($matches[3]) ? $matches[3] : null;
     }
 

@@ -36,7 +36,7 @@ class Api
             'description'  => sprintf('Temperature sensor in %s', $location),
         ];
         header('Content-type: application/json');
-        echo json_encode($response, JSON_THROW_ON_ERROR);
+        echo json_encode($response);
     }
 
     private function getLocationBySensorId(string $sensorId): string

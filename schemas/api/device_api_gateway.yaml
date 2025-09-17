@@ -4,7 +4,7 @@ info:
   description: Provides a facade for communication with remote devices
   version: 1.0.0
 servers:
-  - url: 'https://localhost:8082/device-api-gateway/v1'
+  - url: 'http://localhost:8082/device-api-gateway/v1'
 paths:
   /device/{serialNumber}/healthcheck:
     get:

@@ -5,7 +5,7 @@ info:
   version: 1.0.0
 servers:
   production:
-    url: https://localhost:8082
+    url: 'http://localhost:8082'
     protocol: RabbitMq
 channels:
   device-command:
@@ -34,18 +34,6 @@ components:
           command_journal_id:
             type: integer
             example: 15
-#          device_id:
-#            type: integer
-#            example: 1
-#          actor_id:
-#            type: integer
-#            example: 1
-#          actor_type:
-#            type: string
-#            example: 'user'
-#          command_created_datetime:
-#            type: string
-#            example: '2025-09-01T17:20:12'
     DeviceData:
       payload:
         type: object
