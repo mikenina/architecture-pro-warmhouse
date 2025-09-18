@@ -42,16 +42,18 @@ components:
             type: integer
             example: 3481097512
           data:
-            type: object
-            properties:
-              data_type:
-                type: string
-                example: 'device state'
-              data:
-                type: string
-                example: '{"state": "off"}'
-              datetime:
-                type: string
-                example: '2025-09-01T17:31:19'
+            type: array
+            items:
+              type: object
+              properties:
+                data_type:
+                  type: string
+                  example: 'device state'
+                data:
+                  type: string
+                  example: '{"state": "off"}'
+                datetime:
+                  type: string
+                  example: '2025-09-01T17:31:19'
 
     
