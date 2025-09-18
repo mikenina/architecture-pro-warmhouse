@@ -56,6 +56,7 @@ _Прежде чем проектировать новую систему, не�
 ### 5. Визуализация контекста системы — диаграмма С4
 
 ![system_context](./schemas/context/warmhouse_monolith_context-System_Context_Diagram_for_WarmHouse.png)
+
 [Диаграмма контекста ТеплыйДом](https://www.plantuml.com/plantuml/uml/RLBBJjj05DtxAwPP9LA8Dwowgw1I5z14BGXr5PbaIYpv4TbZ7hkGg0-9gWYf-whb1zA0XI7W_CATF-gvOnUSafN7TyuzvznpvuKRzBoaBvF84mEbXl5BsuwSezQ1gmR9VXBBg1S6IWQgrGjzU-WvWKfyRorMVS_TjpVMrpfSsjtUidqdLZ92gRl17SUgDGJIihPUVMZlxdHtsftkPdllRRrXMSfLdXJlJz3WYn8jDbtd879yyJ6Cn9uJ-Mz2g5jMHqPn67HV7wiwkscA6lsadERw6ztWEwEf7bFA_xL65IpzeHUUICaDlsX1gVvC6KrfJfa-rME1KYxqXC-eFXYgEqe53dyeroCzeUk27vUPFWTxOTYmz-MXspFSbyoWHu3U6guPvRNLzQceWn9szHSukQEiAN0FwvGs_dU26auF-emTpOInSe_UJuyswaV8QC0P5HEQgT05bA3VE2oGoHdTqWzkhJq7cG6HXxvW9O2kJ22qWAdfeuNCH8Acd0d_bUY-uYg59-kTzChzBFcwVABJvzZ1U2LPKnXOha_Da1nRPfBdXj8mRt1aBYUy76YoP4Miif9deaMworioiZU06R3-Mf4qmPJnbq9FpsbfFdwArzZbN7_7LilkOeKvabkb2yA_)
 
 # Задание 2. Проектирование микросервисной архитектуры
