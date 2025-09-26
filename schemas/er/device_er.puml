@@ -1,0 +1,73 @@
+@startuml
+skinparam linetype ortho
+
+entity "User" as user {
+    *user_id : number <<serial_number>>
+    --
+}
+
+entity "Device" as device {
+    *device_id : number <<serial_number>>
+    --
+    *device_type_id : number <<FK>>
+    *location_id : number <<FK>>
+    *serial_number : number <<UK>>
+    description : text
+    created_datetime: datetime
+    healthcheck_datetime: datetime
+    healthcheck_status : bool
+}
+
+entity "DeviceType" as device_type {
+    *device_type_id : number
+    --
+    *name : text
+    unit : string
+}
+
+entity "Location" as location {
+    *location_id : number <<serial_number>>
+    __
+    *house_id : number <<FK>>
+    description: text
+}
+
+entity "House" as house {
+    *house_id : number <<serial_number>>
+    __
+    *user_id : number <<FK>>
+    address: text
+    description: text
+}
+
+entity "Scenario" as scenario {
+    *scenario_id : number <<serial_number>>
+    __
+    *house_id : number <<FK>>
+    *scenario : text
+    description: text
+}
+
+entity "CommandJournal" as command_journal {
+    *command_journal_id : number <<serial_number>>
+    --
+    *device_id : number <<FK>>
+    *command : json
+    *actor_type: string
+    *actor_id : number <<FK>> !--user_id or scenario_id depending on actor_type
+    *created_datetime: timastamp
+    *execution_status: string
+    execution_payload: json
+    execution_finished_datetime: timastamp
+}
+
+device_type ||--o{ device
+user ||--o{ house
+house ||--o{ location
+house ||--o{ scenario
+location ||--o{ device
+device ||--o{ command_journal
+user ||--o{ command_journal
+scenario ||--o{ command_journal
+
+@enduml

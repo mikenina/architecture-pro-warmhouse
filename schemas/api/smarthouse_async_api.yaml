@@ -1,0 +1,59 @@
+asyncapi: 2.6.0
+info:
+  title: SaaS SmartHouse Async API
+  description: Provides topics and messages structure
+  version: 1.0.0
+servers:
+  production:
+    url: 'http://localhost:8082'
+    protocol: RabbitMq
+channels:
+  device-command:
+    description: Channel for publishing commands for external device
+    publish:
+      summary: Publish command
+      message:
+        contentType: application/json
+        $ref: '#/components/messages/DeviceCommand'
+  device-data:
+    description: Channel for publishing data from external device
+    publish:
+      summary: Publish data
+      message:
+        contentType: application/json
+        $ref: '#/components/messages/DeviceData'
+components:
+  messages:
+    DeviceCommand:
+      payload:
+        type: object
+        properties:
+          device_serial_number:
+            type: integer
+            example: 3481097512
+          command_journal_id:
+            type: integer
+            example: 15
+    DeviceData:
+      payload:
+        type: object
+        properties:
+          device_serial_number:
+            type: integer
+            example: 3481097512
+          data:
+            type: array
+            items:
+              type: object
+              properties:
+                data_type:
+                  type: string
+                  example: 'device state'
+                data:
+                  type: string
+                  example: '{"state": "off"}'
+                datetime:
+                  type: string
+                  example: '2025-09-01T17:31:19'
+
+    

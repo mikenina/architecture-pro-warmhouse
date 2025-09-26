@@ -1,0 +1,27 @@
+openapi: 3.1.0
+info:
+  title: SaaS SmartHouse DeviceApiGateway API spec - OpenAPI 3.0
+  description: Provides a facade for communication with remote devices
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8082/device-api-gateway/v1'
+paths:
+  /device/{serialNumber}/healthcheck:
+    get:
+      summary: Check an external device availability.
+      description: Returns code 200 - if a device is available, 503 otherwise.
+      parameters:
+        - name: serialNumber
+          in: path
+          description: ID of a Device to healthcheck
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Device is available
+        '503':
+          description: Device is unavailable
+        '400':
+          description: Invalid SN supplied
